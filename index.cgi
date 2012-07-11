@@ -37,7 +37,9 @@ def min_format(min):
     return str(min)
 
 print '<!DOCTYPE html>'
-print '<html><head><style>th { text-align: left; }</style></head><body>'
+print '<html><head><style>th { text-align: left; }</style><title>Fringe Showtime Listing</title></head><body>'
+print '<center><h2>Fringe Showtime Listing</h2>'
+print '<span>by <a href="http://www.joshmatthews.net">Josh Matthews</a> (<a href="http://www.github.com/jdm/fringealternative/">source</a>; patches accepted!)</span></center><br>'
 print '<form action="index.cgi" method="post"><div>'
 print 'Show schedule for: July <select name="cur_day">'
 for day in xrange(6, 16):
@@ -53,9 +55,9 @@ for min in xrange(0, 61):
     print '<option value="%s"%s>%s</option>' % (min, ' selected' if min == cur_min else '', min_format(min))
 print '</select>'
 
-print '</div><input type="submit" value="Submit"></form><br>'
+print '</div><input type="submit" value="Submit"></form><br><br>'
 
-print '<table>'
+print '<table cellspacing=10px>'
 print '<th>Title</th><th>Venue</th><th>End time</th>'
 last_time = None
 for row in c.fetchall():
