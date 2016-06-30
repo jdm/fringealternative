@@ -22,6 +22,7 @@ class EST(tzinfo):
 today = datetime.now(EST())
 
 form = cgi.FieldStorage()
+cur_month = int(form.getfirst('cur_month', str(today.month)))
 cur_day = int(form.getfirst('cur_day', str(today.day)))
 cur_hour = int(form.getfirst('cur_hour', str(today.hour)))
 cur_min = int(form.getfirst('cur_min', str(today.minute)))
@@ -41,10 +42,14 @@ print '<html><head><style>th { text-align: left; }</style><title>Fringe Showtime
 print '<center><h2>Fringe Showtime Listing</h2>'
 print '<span>by <a href="http://www.joshmatthews.net">Josh Matthews</a> (<a href="http://www.github.com/jdm/fringealternative/">source</a>; patches accepted!)</span></center><br>'
 print '<form action="index.cgi" method="post"><div>'
-print 'Show schedule for: July <select name="cur_day">'
-for day in xrange(1, 13):
+print 'Show schedule for: <select name="cur_month">'
+print '<option value="6"%s>June</option>' % (' selected' if 6 == cur_month else '')
+print '<option value="7"%s>July</option>' % (' selected' if 7 == cur_month else '')
+print '</select>'
+print '<select name="cur_day">'
+for day in xrange(1, 31):
     print '<option value="%s"%s>%s</option>' % (day, ' selected' if day == cur_day else '', day)
-print '</select>, 2015, starting from '
+print '</select>, 2016, starting from '
 print '<select name="cur_hour">'
 for hour in xrange(0, 25):
     print '<option value="%s"%s>%s</option>' % (hour, ' selected' if hour == cur_hour else '', hour)
@@ -66,7 +71,7 @@ for row in c.fetchall():
         last_time = time
         print '<tr><td colspan=2><h5>', time, '</h5></td></tr>'
 
-    end_time = timedelta(minutes=row['length']) + datetime(year=2015, month=7, day=cur_day, hour=row['hour'], minute=row['minute'])
+    end_time = timedelta(minutes=row['length']) + datetime(year=2016, month=cur_month, day=cur_day, hour=row['hour'], minute=row['minute'])
 
     print '<tr>'
     print '<td><a href="%s">%s</a></td><td>%s</td><td>%s</td>' % (row['url'], row['name'].encode('ascii', 'ignore'), row['venue'], str(end_time.hour) + ':' + min_format(end_time.minute))
