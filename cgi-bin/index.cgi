@@ -30,6 +30,11 @@ cur_min = int(form.getfirst('cur_min', str(today.minute)))
 conn = sqlite3.connect('shows.db')
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
+c.execute('select * from venues')
+venues = {}
+for row in c.fetchall():
+    venues[row['id']] = { 'name': row['name'], 'address': row['address'] }
+
 c.execute('select * from shows, runs where runs.show_id = shows.id and runs.day = ? and (runs.hour > ? or (runs.hour = ? and runs.minute >= ?)) order by runs.hour, runs.minute, shows.length asc', (cur_day, cur_hour, cur_hour, cur_min))
 
 def min_format(min):
@@ -74,7 +79,13 @@ for row in c.fetchall():
     end_time = timedelta(minutes=row['length']) + datetime(year=2016, month=cur_month, day=cur_day, hour=row['hour'], minute=row['minute'])
 
     print '<tr>'
-    print '<td><a href="%s">%s</a></td><td>%s</td><td>%s</td>' % (row['url'], row['name'].encode('ascii', 'ignore'), row['venue'], str(end_time.hour) + ':' + min_format(end_time.minute))
+    print '<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td><td>%s</td>' % (
+        row['url'],
+        row['name'].encode('ascii', 'ignore'),
+        'https://www.google.ca/maps/place/' + venues[row['venue_id']]['address'].replace(' ', '+'),
+        venues[row['venue_id']]['name'],
+        str(end_time.hour) + ':' + min_format(end_time.minute)
+    )
     print '</tr>'
 
 print '</table>'

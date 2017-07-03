@@ -7,12 +7,15 @@ conn = sqlite3.connect('shows.db')
 c = conn.cursor()
 c.execute('DROP TABLE IF EXISTS shows')
 c.execute('DROP TABLE IF EXISTS runs')
-c.execute('CREATE TABLE shows (id integer PRIMARY KEY, name text, url text, venue text, genre text, length integer)')
+c.execute('DROP TABLE IF EXISTS venues')
+c.execute('CREATE TABLE venues (id integer PRIMARY KEY, name text, address text)')
+c.execute('CREATE TABLE shows (id integer PRIMARY KEY, name text, url text, venue_id integer, genre text, length integer, FOREIGN KEY(venue_id) REFERENCES venues(id))')
 c.execute('CREATE TABLE runs (show_id integer, day integer, hour integer, minute integer, FOREIGN KEY(show_id) REFERENCES shows(id))')
 
 tree = parse('full2017.html').getroot()
 
 all_shows = {}
+venues = {}
 
 shows = tree.cssselect('.show-card')
 for show in shows:
@@ -36,6 +39,9 @@ for show in shows:
     performances = page_content.cssselect('.performances')[0]
     show_info = performances.getprevious()
     venue = show_info.cssselect('h3')[0].text_content()
+    venue_address_parent = show_info.cssselect('h3')[0].getnext()
+    venue_address = ' '.join(venue_address_parent.itertext()).strip()
+    print(venue_address)
 
     performances = page_content.cssselect('.performances tbody tr')
     showtimes = []
@@ -45,19 +51,24 @@ for show in shows:
     
     all_shows[title] = {
         'url': url,
-        'venue': venue,
+        'venue': { 'name': venue, 'address': venue_address },
         'genre': None,
         'length': length,
         'showtimes': showtimes,
     }
 
+for show in all_shows.values():
+    venue = show['venue']
+    if venue['name']  not in venues:
+        c.execute('INSERT INTO venues(id, name, address) VALUES(NULL, ?, ?)', (venue['name'], venue['address']))
+        venues[venue['name']] = c.lastrowid
+
 for (title, show) in all_shows.items():
-    c.execute('INSERT INTO shows(id, name, url, venue, genre, length) VALUES(NULL, ?, ?, ?, ?, ?)',
-              (title, show['url'], show['venue'], show['genre'], show['length']))
+    c.execute('INSERT INTO shows(id, name, url, venue_id, genre, length) VALUES(NULL, ?, ?, ?, ?, ?)',
+              (title, show['url'], venues[show['venue']['name']], show['genre'], show['length']))
     show_id = c.lastrowid
 
     for time in show['showtimes']:
-        print(time)
         parts = time.split(' ')
         day = int(parts[0][:-2])
         hour = int(parts[2].split(':')[0])
