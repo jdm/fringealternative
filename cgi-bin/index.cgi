@@ -26,6 +26,7 @@ cur_month = int(form.getfirst('cur_month', str(today.month)))
 cur_day = int(form.getfirst('cur_day', str(today.day)))
 cur_hour = int(form.getfirst('cur_hour', str(today.hour)))
 cur_min = int(form.getfirst('cur_min', str(today.minute)))
+cur_year = today.year
 
 conn = sqlite3.connect('shows.db')
 conn.row_factory = sqlite3.Row
@@ -54,7 +55,7 @@ print '</select>'
 print '<select name="cur_day">'
 for day in xrange(1, 31):
     print '<option value="%s"%s>%s</option>' % (day, ' selected' if day == cur_day else '', day)
-print '</select>, 2016, starting from '
+print '</select>, %d, starting from ' % cur_year
 print '<select name="cur_hour">'
 for hour in xrange(0, 25):
     print '<option value="%s"%s>%s</option>' % (hour, ' selected' if hour == cur_hour else '', hour)
@@ -76,7 +77,7 @@ for row in c.fetchall():
         last_time = time
         print '<tr><td colspan=2><h5>', time, '</h5></td></tr>'
 
-    end_time = timedelta(minutes=row['length']) + datetime(year=2016, month=cur_month, day=cur_day, hour=row['hour'], minute=row['minute'])
+    end_time = timedelta(minutes=row['length']) + datetime(year=cur_year, month=cur_month, day=cur_day, hour=row['hour'], minute=row['minute'])
 
     print '<tr>'
     print '<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td><td>%s</td>' % (
